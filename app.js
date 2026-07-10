@@ -8,6 +8,7 @@ const ejsMate = require("ejs-mate");
 const User = require("./model/user");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+const Course = require("./model/course");
 const session = require('express-session');
 mongoose.connect("mongodb://127.0.0.1:27017/skillbuzz")
   .then(() => console.log("MongoDB connected"))
@@ -39,8 +40,8 @@ app.get("/skillbuzz",(req,res)=>{
 app.get("/skillbuzz/signup",(req,res)=>{
     res.render("signup.ejs");
 })
-app.post("skillbuzz/signup",(req,res,next)=>{
-    console.log(req.body);
+app.post("/skillbuzz/signup",(req,res,next)=>{
+   console.log(req.body);
    let {username,email,password} = req.body;
    let newUser = new User({username,email});
    User.register(newUser,password,(err,user)=>{
@@ -53,6 +54,19 @@ app.post("skillbuzz/signup",(req,res,next)=>{
       res.redirect("/skillbuzz");
     });
    })
+})
+app.get("/skillbuzz/new",(req,res)=>{
+    res.render("new.ejs");
+})
+app.post("/skillbuzz/new",async(req,res)=>{
+    let{title,description}= req.body;
+    let newCourse = new Course({
+        title: title,
+        description: description
+    })
+    await newCourse.save();
+    console.log(newCourse);
+    res.redirect("/skillbuzz");
 })
 app.listen(port,()=>{
     console.log("app is listening");
