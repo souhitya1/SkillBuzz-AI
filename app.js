@@ -58,7 +58,11 @@ app.post("/skillbuzz/signup",(req,res,next)=>{
 app.get("/skillbuzz/new",(req,res)=>{
     res.render("new.ejs");
 })
-app.post("/skillbuzz/new",async(req,res)=>{
+app.get("/skillbuzz/courses",async(req,res)=>{
+    let courses = await Course.find({});
+    res.render("course.ejs",{courses});
+})
+app.post("/skillbuzz/courses",async(req,res)=>{
     let{title,description}= req.body;
     let newCourse = new Course({
         title: title,
@@ -66,7 +70,7 @@ app.post("/skillbuzz/new",async(req,res)=>{
     })
     await newCourse.save();
     console.log(newCourse);
-    res.redirect("/skillbuzz");
+    res.redirect("/skillbuzz/courses");
 })
 app.listen(port,()=>{
     console.log("app is listening");
