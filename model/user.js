@@ -12,7 +12,7 @@ const userschema = new mongoose.Schema({
         required: true
     }
 })
-userSchema.plugin(passportLocalMongoose.default || passportLocalMongoose, {
+userschema.plugin(passportLocalMongoose.default || passportLocalMongoose, {
     usernameField: "email"     // ← We will login using email
 });
 module.exports = mongoose.model("User",userschema);
