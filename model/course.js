@@ -26,6 +26,11 @@ const courseSchema= new mongoose.Schema({
         required: true
     },
     modules:[moduleSchema],
+    status:{
+        type: String,
+        enum: ["Generating","Failed","Ready"],
+        default: "Generating"
+    },
     createdAt:{
         type: Date,
         default: Date.now

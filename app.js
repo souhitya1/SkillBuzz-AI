@@ -72,7 +72,8 @@ app.post("/skillbuzz/courses",async(req,res)=>{
     let{title,description}= req.body;
     let newCourse = new Course({
         title: title,
-        description: description
+        description: description,
+        status: "Generating"
     })
     await newCourse.save();
     console.log(newCourse);
@@ -82,9 +83,11 @@ app.post("/skillbuzz/courses",async(req,res)=>{
         newCourse.title = generate.title;
         newCourse.description = generate.description;
         newCourse.modules = generate.modules;
+        newCourse.status = "Ready";
         await newCourse.save();
     }catch(err){
         console.log("Generation failed",err);
+        newCourse.status= "Failed";
         await newCourse.save();
     }
 })
