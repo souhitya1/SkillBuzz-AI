@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const port = 8080;
@@ -10,6 +11,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const Course = require("./model/course");
 const session = require('express-session');
+const generatecourse = require("./utils/generatecourse");
 mongoose.connect("mongodb://127.0.0.1:27017/skillbuzz")
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB connection error:", err));
@@ -62,6 +64,10 @@ app.get("/skillbuzz/courses",async(req,res)=>{
     let courses = await Course.find({});
     res.render("course.ejs",{courses});
 })
+app.get("/skillbuzz/courses/:id",async(req,res)=>{
+  let course = await Course.findById(req.params.id);
+  res.render("show.ejs",{course});
+})
 app.post("/skillbuzz/courses",async(req,res)=>{
     let{title,description}= req.body;
     let newCourse = new Course({
@@ -70,7 +76,17 @@ app.post("/skillbuzz/courses",async(req,res)=>{
     })
     await newCourse.save();
     console.log(newCourse);
-    res.redirect("/skillbuzz/courses");
+    res.redirect(`/skillbuzz/courses/${newCourse._id}`);
+    try{
+        const generate = await generatecourse(title,description);
+        newCourse.title = generate.title;
+        newCourse.description = generate.description;
+        newCourse.modules = generate.modules;
+        await newCourse.save();
+    }catch(err){
+        console.log("Generation failed",err);
+        await newCourse.save();
+    }
 })
 app.listen(port,()=>{
     console.log("app is listening");
