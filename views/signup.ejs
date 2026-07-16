@@ -1,9 +1,12 @@
 <% layout("layout/boilerplate") -%>
-    <form action="/skillbuzz/signup" method="post">
+    <form action="/skillbuzz/signup" method="post" class="needs-validation" novalidate>
       <br>
     <div class="mb-3">
        <label for="exampleInputusername1" class="form-label">Username</label>
        <input type="text" class="form-control" name="username" id="exampleInputusername1" autocomplete="username">
+       <div class="valid-feedback">
+      Looks good!
+    </div>
     </div>
   <div class="mb-3">
     <label for="exampleInputEmail1" class="form-label">Email address</label>
