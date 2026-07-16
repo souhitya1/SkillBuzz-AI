@@ -42,23 +42,49 @@ app.get("/skillbuzz",(req,res)=>{
 app.get("/skillbuzz/signup",(req,res)=>{
     res.render("signup.ejs");
 })
-app.post("/skillbuzz/signup",(req,res,next)=>{
+app.post("/skillbuzz/signup",async(req,res,next)=>{
+try{
    console.log(req.body);
    let {username,email,password} = req.body;
    let newUser = new User({username,email});
-   User.register(newUser,password,(err,user)=>{
+   let registeruser = await User.register(newUser,password);
+   req.logIn(registeruser,(err)=>{
     if(err){
-        req.flash("error",err.message);
-        res.redirect("/skillbuzz/signup");
+        return next(err);
     }
-    passport.authenticate("local")(req, res, () => {
-        console.log("succesfully logged in")
-      res.redirect("/skillbuzz");
-    });
+    req.flash("success","Succesfully signed up");
+    console.log("registered user");
+    res.redirect("/skillbuzz");
    })
+}catch(err){
+    req.flash("error","Error in sign up");
+    res.redirect("/skillbuzz/signup");
+}
+})
+app.get("/skillbuzz/login",(req,res)=>{
+    res.render("login.ejs");
+})
+app.post('/skillbuzz/login', 
+  passport.authenticate('local', { 
+    failureRedirect: '/skillbuzz/login',
+    failureFlash: true 
+}),
+(req,res)=>{
+   req.flash("success","Succesfully logged in");
+   console.log("logged in");
+   res.redirect("/skillbuzz");
 })
 app.get("/skillbuzz/new",(req,res)=>{
     res.render("new.ejs");
+})
+app.get("/skillbuzz/logout",(req,res,next)=>{
+    req.logOut((err)=>{
+        if(err){
+         next(err);
+        }
+        req.flash("error","User logged out");
+        res.redirect("/skillbuzz");
+    })
 })
 app.get("/skillbuzz/courses",async(req,res)=>{
     let courses = await Course.find({});

@@ -13,6 +13,6 @@ const userschema = new mongoose.Schema({
     }
 })
 userschema.plugin(passportLocalMongoose.default || passportLocalMongoose, {
-    usernameField: "email"     // ← We will login using email
+    usernameField: "email"   
 });
 module.exports = mongoose.model("User",userschema);
