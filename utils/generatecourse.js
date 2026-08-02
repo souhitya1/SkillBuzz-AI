@@ -17,13 +17,20 @@ JSON schema to follow exactly:
         { "title": "string", "content": "string (detailed, 150-300 words)" }
       ]
     }
+  ],
+"finalTest": [
+    { "question": "string", "options": ["string","string","string","string"], "correctAnswer": "string (must exactly match one of the options text, character for character)" }
   ]
 }
+
 
 Rules:
 - Generate 4 to 6 modules
 - Each module has 3 to 5 lessons
 - Content should be genuinely educational and specific to the topic, not generic filler
+- The finalTest must have exactly 5 questions covering concepts from across the whole course
+- Each finalTest question must have exactly 4 options
+- correctAnswer must exactly match one of that question's options, character for character
 `
 const response = await fetch(
  `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,

@@ -16,12 +16,16 @@
           <a class="nav-link" href="skillbuzz/login">Login</a>
         </li>
       <%}%>
+      <%if(currentUser){%>
         <li class="nav-item">
           <a class="nav-link" href="skillbuzz/logout">Log out</a>
         </li>
+      <%}%>
+        <%if(currentUser){%>
         <li class="nav-item">
           <a class="nav-link" href="/skillbuzz/new">New Course</a>
         </li>
+      <%}%>
       </ul>
     </div>
   </div>

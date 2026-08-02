@@ -26,6 +26,15 @@ const courseSchema= new mongoose.Schema({
         required: true
     },
     modules:[moduleSchema],
+    finalTest: [{
+        question: [String],
+        options: [String],
+        correctanswer: [String]
+    }],
+    createdBy:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
     status:{
         type: String,
         enum: ["Generating","Failed","Ready"],
