@@ -165,10 +165,10 @@ app.post("/skillbuzz/courses/:id/finaltest",isLoggedIn,async(req,res)=>{
     }
  let correctCount = 0;
     course.finalTest.forEach((q, i) => {
-        let submitted = req.body["answer" + i];
+        let submitted = (req.body["answer" + i] || "").trim().toLowerCase();
         let correct = (q.correctAnswer || "").trim().toLowerCase();
         console.log(`Q${i}: submitted="${submitted}" | correct="${correct}" | match=${submitted === correct}`);
-        if (submitted === q.correctAnswer) {
+        if (submitted === correct){
             correctCount++;
         }
     });

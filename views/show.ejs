@@ -4,75 +4,144 @@
   <meta http-equiv="refresh" content="4">
 <% } %>
 
-<h2><%= course.title %></h2>
-<p class="text-muted"><%= course.description %></p>
-
-<% if (course.status === "generating") { %>
-  <div class="alert alert-info">Your course is being generated. This page will refresh automatically...</div>
-<% } else if (course.status === "failed") { %>
-  <div class="alert alert-danger">Course generation failed. Please try again.</div>
-<% } else { %>
-
-  <% let totalLessons = 0; %>
-  <% course.modules.forEach(m => totalLessons += m.lessons.length); %>
-  <% let percent = totalLessons > 0 ? Math.round((progress.completedLessons.length / totalLessons) * 100) : 0; %>
-
-  <div class="progress mb-4" style="height: 20px;">
-    <div class="progress-bar bg-success" style="width: <%= percent %>%"><%= percent %>%</div>
+<div class="container py-5">
+  
+  <div class="row mb-4">
+    <div class="col-lg-8">
+      <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-2 fw-semibold">
+        📚 AI Course Curriculum
+      </span>
+      <h1 class="fw-bold display-5 mb-2"><%= course.title %></h1>
+      <p class="text-muted lead fs-6"><%= course.description %></p>
+    </div>
   </div>
 
-  <% if (progress.courseCompleted) { %>
-    <div class="alert alert-success">🎉 Course completed! You passed the final test.</div>
-  <% } else if (percent >= 80) { %>
-    <div class="alert alert-warning">
-      You've completed <%= percent %>% of the lessons. Take the final test to complete this course!
+  <% if (course.status === "generating") { %>
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-light">
+      <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <h3 class="fw-bold mb-2">Generating your course...</h3>
+      <p class="text-muted mb-0">Gemini AI is crafting your modules, lessons, and final assessment. This page will refresh automatically.</p>
     </div>
-    <form action="/skillbuzz/courses/<%= course._id %>/finaltest" method="POST">
-      <% course.finalTest.forEach(function(q, qi) { %>
-        <div class="mb-3">
-          <p><strong><%= q.question %></strong></p>
-          <% q.options.forEach(function(opt) { %>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="answer<%= qi %>" value="<%= opt %>" required>
-              <label class="form-check-label"><%= opt %></label>
-            </div>
-          <% }) %>
-        </div>
-      <% }) %>
-      <button type="submit" class="btn btn-primary">Submit Final Test</button>
-    </form>
-  <% } %>
 
-  <div class="accordion mt-4" id="courseAccordion">
-    <% for (let i = 0; i < course.modules.length; i++) { %>
-      <% let mod = course.modules[i]; %>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#module<%= i %>">
-            <%= mod.title %>
-          </button>
-        </h2>
-        <div id="module<%= i %>" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
-          <div class="accordion-body">
-            <% for (let j = 0; j < mod.lessons.length; j++) { %>
-              <% let lesson = mod.lessons[j]; %>
-              <% let key = i + "-" + j; %>
-              <% let isDone = progress.completedLessons.includes(key); %>
+  <% } else if (course.status === "failed") { %>
+    <div class="alert alert-danger rounded-3 shadow-sm p-4" role="alert">
+      <h4 class="alert-heading fw-bold">Generation Failed</h4>
+      <p class="mb-0">We encountered an issue while generating your course. Please go back and try creating it again.</p>
+    </div>
 
-              <h5><%= lesson.title %> <% if (isDone) { %> ✅ <% } %></h5>
-              <p><%= lesson.content %></p>
+  <% } else { %>
 
-              <form action="/skillbuzz/courses/<%= course._id %>/complete/<%= key %>" method="POST">
-                <button type="submit" class="btn btn-sm btn-<%= isDone ? 'secondary' : 'success' %>">
-                  <%= isDone ? 'Mark Incomplete' : 'Mark Complete' %>
-                </button>
-              </form>
-              <hr>
-            <% } %>
-          </div>
+    <% let totalLessons = 0; %>
+    <% course.modules.forEach(m => totalLessons += m.lessons.length); %>
+    <% let percent = totalLessons > 0 ? Math.round((progress.completedLessons.length / totalLessons) * 100) : 0; %>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="fw-semibold text-dark">Course Progress</span>
+        <span class="badge bg-primary rounded-pill px-3 py-2 fs-6"><%= percent %>% Complete</span>
+      </div>
+      <div class="progress rounded-pill mb-0" style="height: 12px;">
+        <div class="progress-bar bg-success rounded-pill progress-bar-striped progress-bar-animated" role="progressbar" style="width: <%= percent %>%" aria-valuenow="<%= percent %>" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+    </div>
+
+    <% if (progress.courseCompleted) { %>
+      <div class="alert alert-success border-0 shadow-sm rounded-4 p-4 mb-4 d-flex align-items-center gap-3">
+        <div class="fs-2">🎉</div>
+        <div>
+          <h5 class="fw-bold mb-1">Course Completed!</h5>
+          <p class="mb-0 text-muted small">Congratulations! You successfully passed the final assessment and mastered this course.</p>
         </div>
       </div>
     <% } %>
-  </div>
 
-<% } %>
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white">
+      <h3 class="fw-bold mb-4 fs-4">Course Content</h3>
+      
+      <div class="accordion accordion-flush" id="courseAccordion">
+        <% for (let i = 0; i < course.modules.length; i++) { %>
+          <% let mod = course.modules[i]; %>
+          <div class="accordion-item border rounded-3 mb-3 overflow-hidden shadow-sm">
+            <h2 class="accordion-header" id="heading<%= i %>">
+              <button class="accordion-button collapsed fw-semibold bg-light px-4 py-3" type="button" data-bs-toggle="collapse" data-bs-target="#module<%= i %>" aria-expanded="false" aria-controls="module<%= i %>">
+                Module <%= i + 1 %>: <%= mod.title %>
+              </button>
+            </h2>
+            <div id="module<%= i %>" class="accordion-collapse collapse" aria-labelledby="heading<%= i %>" data-bs-parent="#courseAccordion">
+              <div class="accordion-body px-4 py-4">
+                <% for (let j = 0; j < mod.lessons.length; j++) { %>
+                  <% let lesson = mod.lessons[j]; %>
+                  <% let key = i + "-" + j; %>
+                  <% let isDone = progress.completedLessons.includes(key); %>
+
+                  <div class="lesson-item p-3 rounded-3 mb-3 border <%= isDone ? 'bg-light border-success border-opacity-25' : 'bg-white' %>">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <h5 class="fw-bold fs-6 mb-0 text-dark d-flex align-items-center gap-2">
+                        <span><%= j + 1 %>.</span> <%= lesson.title %> 
+                        <% if (isDone) { %> 
+                          <span class="badge bg-success bg-opacity-10 text-success fw-normal small">Completed ✅</span> 
+                        <% } %>
+                      </h5>
+                    </div>
+                    <p class="text-muted small mb-3"><%= lesson.content %></p>
+
+                    <form action="/skillbuzz/courses/<%= course._id %>/complete/<%= key %>" method="POST">
+                      <button type="submit" class="btn btn-sm <%= isDone ? 'btn-outline-secondary' : 'btn-success' %> px-3 rounded-pill">
+                        <%= isDone ? 'Mark Incomplete' : 'Mark Complete' %>
+                      </button>
+                    </form>
+                  </div>
+                  
+                  <% if (j < mod.lessons.length - 1) { %>
+                    <hr class="text-muted opacity-25 my-3">
+                  <% } %>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Final Test Section (Gated at 80%) -->
+    <% if (!progress.courseCompleted && percent >= 80) { %>
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white border-top border-warning border-4">
+        <div class="mb-4">
+          <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill mb-2 fw-semibold">
+            🎓 Final Assessment
+          </span>
+          <h3 class="fw-bold">Ready for the Final Test?</h3>
+          <p class="text-muted small">You've hit 80%+ lesson completion. Answer these questions correctly to certify your completion.</p>
+        </div>
+
+        <form action="/skillbuzz/courses/<%= course._id %>/finaltest" method="POST">
+          <% course.finalTest.forEach(function(q, qi) { %>
+            <div class="card bg-light border-0 rounded-3 p-4 mb-3">
+              <p class="fw-semibold mb-3">Question <%= qi + 1 %>: <%= q.question %></p>
+              <div class="vstack gap-2">
+                <% q.options.forEach(function(opt, optIdx) { %>
+  <div class="form-check bg-white p-3 rounded-3 border">
+    <input class="form-check-input ms-0 me-2" type="radio" name="answer<%= qi %>" value="<%= opt %>" id="q<%= qi %>_opt<%= optIdx %>" required>
+    <!-- Removed "stretched-link" so the browser handles label-to-input binding natively -->
+    <label class="form-check-label w-100" style="cursor: pointer;" for="q<%= qi %>_opt<%= optIdx %>"><%= opt %></label>
+  </div>
+<% }) %>
+              </div>
+            </div>
+          <% }) %>
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary btn-lg shadow-sm">Submit Final Test</button>
+          </div>
+        </form>
+      </div>
+    <% } else if (!progress.courseCompleted && percent < 80) { %>
+      <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-light">
+        <p class="text-muted mb-0 small">🔒 Final test will unlock automatically once you complete at least <strong>80%</strong> of the course lessons.</p>
+      </div>
+    <% } %>
+
+  <% } %>
+
+</div>
