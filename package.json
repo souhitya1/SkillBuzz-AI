@@ -24,6 +24,7 @@
     "ejs-mate": "^4.0.0",
     "express": "^4.22.2",
     "express-session": "^1.19.0",
+    "joi": "^18.2.3",
     "mongoose": "^9.7.3",
     "node-fetch": "^2.7.0",
     "passport": "^0.7.0",
