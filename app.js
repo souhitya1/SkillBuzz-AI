@@ -15,6 +15,9 @@ const generatecourse = require("./utils/generatecourse");
 const Progress = require("./model/progress");
 const Joi = require("joi");
 const {validateCourse} = require("./validation");
+const multer = require("multer");
+const {storage} = require("./cloudconfig");
+const upload = multer({storage});
 
 mongoose.connect("mongodb://127.0.0.1:27017/skillbuzz")
   .then(() => console.log("MongoDB connected"))
@@ -120,7 +123,7 @@ app.get("/skillbuzz/courses/:id", isLoggedIn, async (req, res) => {
     res.render("show.ejs", { course, progress });
 })
 
-app.post("/skillbuzz/courses", isLoggedIn,validateCourse, async (req, res) => {
+app.post("/skillbuzz/courses", isLoggedIn,upload.single("image"),validateCourse, async (req, res) => {
     let { title, description } = req.body;
     let newCourse = new Course({
         title: title,

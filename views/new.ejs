@@ -1,6 +1,10 @@
 <% layout("layout/boilerplate") -%>
 <br>
-<form action="/skillbuzz/courses" method="post">
+<form action="/skillbuzz/courses" method="post" enctype="multipart/form-data>
+  <div class="mb-3">
+    <label for="image" class="form-label">Course Image (optional)</label>
+    <input type="file" name="image" class="form-control" id="image" accept="image/*">
+  </div>
   <div class="mb-3">
     <label for="exampleInputtitlecouse1" class="form-label">Course Title</label>
     <input type="text" name="title" class="form-control" id="exampleInputtitlecouse1" required>
