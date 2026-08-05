@@ -15,9 +15,8 @@ const generatecourse = require("./utils/generatecourse");
 const Progress = require("./model/progress");
 const Joi = require("joi");
 const {validateCourse} = require("./validation");
-const multer = require("multer");
-const {storage} = require("./cloudconfig");
-const upload = multer({storage});
+const getgradient = require("./utils/getgradient");
+const generateCertificate = require("./utils/generateCertificate");
 
 mongoose.connect("mongodb://127.0.0.1:27017/skillbuzz")
   .then(() => console.log("MongoDB connected"))
@@ -110,7 +109,7 @@ app.get("/skillbuzz/new", isLoggedIn, (req, res) => {
 
 app.get("/skillbuzz/courses", isLoggedIn, async (req, res) => {
     let courses = await Course.find({ createdBy: req.user._id });
-    res.render("course.ejs", { courses });
+    res.render("course.ejs", { courses, getgradient});
 })
 
 app.get("/skillbuzz/courses/:id", isLoggedIn, async (req, res) => {
@@ -120,10 +119,10 @@ app.get("/skillbuzz/courses/:id", isLoggedIn, async (req, res) => {
         progress = new Progress({ userId: req.user._id, courseId: course._id });
         await progress.save();
     }
-    res.render("show.ejs", { course, progress });
+    res.render("show.ejs", { course, progress , getgradient});
 })
 
-app.post("/skillbuzz/courses", isLoggedIn,upload.single("image"),validateCourse, async (req, res) => {
+app.post("/skillbuzz/courses", isLoggedIn,validateCourse, async (req, res) => {
     let { title, description } = req.body;
     let newCourse = new Course({
         title: title,
@@ -187,6 +186,15 @@ app.post("/skillbuzz/courses/:id/finaltest",isLoggedIn,async(req,res)=>{
       req.flash("error",`You scored ${scorePercent}%, Course not completed`);
     }
     res.redirect(`/skillbuzz/courses/${course._id}`);
+})
+app.get("/skillbuzz/courses/:id/certificate",async(req,res)=>{
+ let course = await Course.findById(req.params.id);
+ let progress = await Progress.findOne({userId: req.user._id, courseId: course._id});
+ if(!progress || !progress.courseCompleted){
+    req.flash("error", "You need to complete the course first.");
+    return res.redirect(`/skillbuzz/courses/${course._id}`);
+ }
+ generateCertificate(res,course.title,req.user.username);
 })
 app.listen(port, () => {
     console.log("app is listening");

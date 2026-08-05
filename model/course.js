@@ -19,11 +19,6 @@ const courseSchema = new mongoose.Schema({
         options: [String],
         correctAnswer: String
     }],
-    image:{
-        type: String,
-        filename: String,
-        required: true
-    },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     status: {
         type: String,
