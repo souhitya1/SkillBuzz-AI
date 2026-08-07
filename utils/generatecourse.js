@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { GoogleGenAI } = require("@google/genai");
 
-const ai = new GoogleGenAI();
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 async function generatecourse(title, description) {
     if (!process.env.GEMINI_API_KEY) {
@@ -40,7 +40,6 @@ Rules:
 - correctAnswer must exactly match one of that question's options, character for character
 `;
 
-    // Call the native model using the @google/genai client
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
