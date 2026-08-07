@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8080;
 const path = require("path");
 const mongoose = require("mongoose");
 const flash = require("connect-flash");
@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.set("view engine", "ejs");
 app.engine("ejs", ejsMate);
-app.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: true }));
+app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: true }));
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
