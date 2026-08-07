@@ -1,6 +1,13 @@
 require("dotenv").config();
+const { GoogleGenAI } = require("@google/genai");
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 async function generatecourse(title, description) {
+    if (!process.env.GEMINI_API_KEY) {
+        throw new Error("CRITICAL: GEMINI_API_KEY environment variable is missing!");
+    }
+
     const prompt = `You are a course generator. Return ONLY valid JSON, no markdown fences, no explanation text before or after.
 
 Generate a structured course based on this input.
@@ -33,28 +40,18 @@ Rules:
 - correctAnswer must exactly match one of that question's options, character for character
 `;
 
-    const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-goog-api-key": process.env.GEMINI_API_KEY
-            },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
-        }
-    );
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+    });
 
-    const data = await response.json();
-    console.log("RAW GEMINI RESPONSE:", JSON.stringify(data, null, 2));
+    let rawText = response.text;
+    console.log("RAW GEMINI RESPONSE:", rawText);
 
-    if (!data.candidates || !data.candidates[0].content) {
-        throw new Error("Gemini API failed to return content. Check API key permissions and model availability.");
+    if (!rawText) {
+        throw new Error("Gemini API failed to return content.");
     }
 
-    let rawText = data.candidates[0].content.parts[0].text;
     rawText = rawText.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(rawText);
     return parsed;
