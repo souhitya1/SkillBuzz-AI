@@ -1,11 +1,11 @@
 require("dotenv").config();
 const { GoogleGenAI } = require("@google/genai");
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI();
 
 async function generatecourse(title, description) {
     if (!process.env.GEMINI_API_KEY) {
-        throw new Error("CRITICAL: GEMINI_API_KEY environment variable is missing!");
+        throw new Error("CRITICAL: GEMINI_API_KEY environment variable is missing on Render!");
     }
 
     const prompt = `You are a course generator. Return ONLY valid JSON, no markdown fences, no explanation text before or after.
@@ -40,6 +40,7 @@ Rules:
 - correctAnswer must exactly match one of that question's options, character for character
 `;
 
+    // Call the native model using the @google/genai client
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
