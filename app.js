@@ -18,7 +18,7 @@ const {validateCourse} = require("./validation");
 const getgradient = require("./utils/getgradient");
 const generateCertificate = require("./utils/generateCertificate");
 
-mongoose.connect("mongodb://127.0.0.1:27017/skillbuzz")
+mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
