@@ -14,7 +14,7 @@ const session = require('express-session');
 const generatecourse = require("./utils/generatecourse");
 const Progress = require("./model/progress");
 const Joi = require("joi");
-const {validateCourse} = require("./validation");
+const { validateCourse } = require("./validation");
 const getgradient = require("./utils/getgradient");
 const generateCertificate = require("./utils/generateCertificate");
 
@@ -52,18 +52,24 @@ function isLoggedIn(req, res, next) {
     next();
 }
 
+// 1. Root route redirect to fix "Cannot GET /"
+app.get("/", (req, res) => {
+    res.redirect("/skillbuzz");
+});
+
 app.get("/skillbuzz", (req, res) => {
     res.render("home.ejs");
 })
 
-app.use("/skillbuzz",require("./routes/authentication.routes"));
+app.use("/skillbuzz", require("./routes/authentication.routes"));
+
 app.get("/skillbuzz/new", isLoggedIn, (req, res) => {
     res.render("new.ejs");
 })
 
 app.get("/skillbuzz/courses", isLoggedIn, async (req, res) => {
     let courses = await Course.find({ createdBy: req.user._id });
-    res.render("course.ejs", { courses, getgradient});
+    res.render("course.ejs", { courses, getgradient });
 })
 
 app.get("/skillbuzz/courses/:id", isLoggedIn, async (req, res) => {
@@ -73,10 +79,10 @@ app.get("/skillbuzz/courses/:id", isLoggedIn, async (req, res) => {
         progress = new Progress({ userId: req.user._id, courseId: course._id });
         await progress.save();
     }
-    res.render("show.ejs", { course, progress , getgradient});
+    res.render("show.ejs", { course, progress, getgradient });
 })
 
-app.post("/skillbuzz/courses", isLoggedIn,validateCourse, async (req, res) => {
+app.post("/skillbuzz/courses", isLoggedIn, validateCourse, async (req, res) => {
     let { title, description } = req.body;
     let newCourse = new Course({
         title: title,
@@ -113,43 +119,49 @@ app.post("/skillbuzz/courses/:id/complete/:lessonkey", isLoggedIn, async (req, r
     await progress.save();
     res.redirect(`/skillbuzz/courses/${req.params.id}`);
 })
-app.post("/skillbuzz/courses/:id/finaltest",isLoggedIn,async(req,res)=>{
- let course = await Course.findById(req.params.id);
- let progress = await Progress.findOne({userId: req.user.id, courseId: course._id});
- console.log(`final test ${course.finalTest}`);
- if (!course.finalTest || course.finalTest.length === 0) {
+
+app.post("/skillbuzz/courses/:id/finaltest", isLoggedIn, async (req, res) => {
+    let course = await Course.findById(req.params.id);
+    let progress = await Progress.findOne({ userId: req.user.id, courseId: course._id });
+    console.log(`final test ${course.finalTest}`);
+    
+    if (!course.finalTest || course.finalTest.length === 0) {
         req.flash("error", "This course doesn't have a final test yet.");
         return res.redirect(`/skillbuzz/courses/${course._id}`);
     }
- let correctCount = 0;
+    
+    let correctCount = 0;
     course.finalTest.forEach((q, i) => {
         let submitted = (req.body["answer" + i] || "").trim().toLowerCase();
         let correct = (q.correctAnswer || "").trim().toLowerCase();
         console.log(`Q${i}: submitted="${submitted}" | correct="${correct}" | match=${submitted === correct}`);
-        if (submitted === correct){
+        if (submitted === correct) {
             correctCount++;
         }
     });
 
     let scorePercent = Math.round((correctCount / course.finalTest.length) * 100);
-    if(scorePercent>=80){
-        progress.courseCompleted= true
+    if (scorePercent >= 80) {
+        progress.courseCompleted = true;
         await progress.save();
-        req.flash("sucess",`You completed the course by ${scorePercent}%`);
-    }else{
-      req.flash("error",`You scored ${scorePercent}%, Course not completed`);
+        // 2. Fixed typo from "sucess" to "success"
+        req.flash("success", `You completed the course by ${scorePercent}%`);
+    } else {
+        req.flash("error", `You scored ${scorePercent}%, Course not completed`);
     }
     res.redirect(`/skillbuzz/courses/${course._id}`);
 })
-app.get("/skillbuzz/courses/:id/certificate",async(req,res)=>{
- let course = await Course.findById(req.params.id);
- let progress = await Progress.findOne({userId: req.user._id, courseId: course._id});
- if(!progress || !progress.courseCompleted){
-    req.flash("error", "You need to complete the course first.");
-    return res.redirect(`/skillbuzz/courses/${course._id}`);
- }
- generateCertificate(res,course.title,req.user.username);
+
+app.get("/skillbuzz/courses/:id/certificate", isLoggedIn, async (req, res) => {
+    let course = await Course.findById(req.params.id);
+    let progress = await Progress.findOne({ userId: req.user._id, courseId: course._id });
+    if (!progress || !progress.courseCompleted) {
+        req.flash("error", "You need to complete the course first.");
+        return res.redirect(`/skillbuzz/courses/${course._id}`);
+    }
+    generateCertificate(res, course.title, req.user.username);
 })
+
 app.listen(port, () => {
     console.log("app is listening");
 })
